@@ -1,0 +1,62 @@
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #ffffff;
+  padding: 0.75rem 2rem;
+  color: var(--text-main);
+  border-bottom: 1px solid var(--border-light);
+  box-shadow: var(--shadow-sm);
+
+  a {
+    color: var(--text-main);
+    text-decoration: none;
+    font-weight: 500;
+    margin-right: 1.5rem;
+    transition: color 0.2s;
+    font-size: 0.95rem;
+
+    &:hover {
+      color: var(--primary);
+    }
+  }
+
+  .nav-links {
+    display: flex;
+    align-items: center;
+
+    .register-btn {
+      background: var(--primary);
+      color: #ffffff;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      margin-left: 1rem;
+      font-weight: 600;
+      transition: background 0.2s;
+
+      &:hover {
+        background: var(--primary-dark);
+        color: #ffffff;
+      }
+    }
+  }
+
+  .logo {
+    font-weight: 800;
+    font-size: 1.25rem;
+    letter-spacing: -0.5px;
+    display: flex;
+    align-items: center;
+    color: var(--primary);
+    margin-right: 2rem;
+  }
+}
+
+body {
+  padding-top: 68px; // Offset for fixed navbar
+}
