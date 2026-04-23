@@ -1,5 +1,5 @@
-import { Link } from "react-router-dom";
-import { Search, Train, Shield, Clock } from "lucide-react";
+import { Train, Shield, Clock } from "lucide-react";
+import SearchBar from "../components/SearchBar";
 import "./Home.scss";
 
 const Home = () => {
@@ -7,29 +7,11 @@ const Home = () => {
     <div className="home-container">
       <section className="hero">
         <div className="hero-content">
-          <h1>Reliable Train Travel, Simplified.</h1>
-          <p>The official portal for seamless railway bookings and real-time transit data.</p>
+          <div className="badge">Official Railway Booking Portal</div>
+          <h1>Experience the Future of <span>Railway Travel.</span></h1>
+          <p>Book tickets, track trains, and manage your journey with our state-of-the-art transit system.</p>
           
-          <div className="search-card">
-            <div className="search-inputs">
-              <div className="input-group">
-                <label>From</label>
-                <input type="text" placeholder="Departure Station" defaultValue="New Delhi" />
-              </div>
-              <div className="input-group">
-                <label>To</label>
-                <input type="text" placeholder="Arrival Station" defaultValue="Mumbai Central" />
-              </div>
-              <div className="input-group">
-                <label>Travel Date</label>
-                <input type="date" defaultValue="2026-05-10" />
-              </div>
-            </div>
-            <Link to="/search" className="search-btn">
-              <Search size={20} />
-              Search Trains
-            </Link>
-          </div>
+          <SearchBar variant="glass" />
         </div>
       </section>
 

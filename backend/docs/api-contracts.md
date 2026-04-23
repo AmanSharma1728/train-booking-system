@@ -3,7 +3,7 @@
 This document defines the exact contract between the Frontend and Backend. All developers must follow these specifications exactly, including the error response formats.
 
 ## Base URL
-`http://localhost:3000/api`
+`http://localhost:3000/api/v1`
 
 ## Security Layer
 All routes marked as **(Protected)** must use an `AuthMiddleware` to verify the JWT Bearer token in the `Authorization` header.

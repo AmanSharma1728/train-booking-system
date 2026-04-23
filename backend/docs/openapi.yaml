@@ -1,0 +1,393 @@
+openapi: 3.0.0
+info:
+  title: Train Ticket Booking API
+  description: API for a professional train ticket booking system.
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000
+    description: Base URL for Real and Mock (Prism will match paths exactly)
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    GenericError:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Human readable error message"
+
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "u123"
+        name:
+          type: string
+          example: "Mohan Lal"
+        email:
+          type: string
+          example: "mohan@example.com"
+        age:
+          type: integer
+          example: 34
+        gender:
+          type: string
+          enum: [male, female, other]
+          example: "male"
+
+    Train:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "t101"
+        number:
+          type: string
+          example: "12432"
+        name:
+          type: string
+          example: "Rajdhani Exp"
+        src:
+          type: string
+          example: "New Delhi"
+        dest:
+          type: string
+          example: "Mumbai Central"
+        date:
+          type: string
+          format: date
+          example: "2026-05-10"
+        departure:
+          type: string
+          example: "16:00"
+        arrival:
+          type: string
+          example: "08:15"
+        duration:
+          type: string
+          example: "16h 15m"
+        inventory:
+          type: object
+          additionalProperties:
+            type: object
+            properties:
+              available:
+                type: integer
+              price:
+                type: number
+          example:
+            SL: { "available": 45, "price": 550 }
+            "3A": { "available": 12, "price": 1250 }
+            "2A": { "available": 2, "price": 1800 }
+
+    Booking:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "b001"
+        pnr:
+          type: string
+          example: "PNR1234567"
+        trainId:
+          type: string
+          example: "t101"
+        trainName:
+          type: string
+          example: "Rajdhani Exp"
+        seatId:
+          type: string
+          example: "S1-42"
+        date:
+          type: string
+          format: date
+          example: "2026-05-10"
+        departure:
+          type: string
+          example: "16:00"
+        classCode:
+          type: string
+          example: "3A"
+        passengers:
+          type: array
+          items:
+            $ref: '#/components/schemas/Passenger'
+        totalFare:
+          type: number
+          example: 1250
+        status:
+          type: string
+          enum: [SEAT_HELD, PAYMENT_PENDING, CONFIRMED, RAC, WAITLISTED, CANCELLED]
+          example: "CONFIRMED"
+
+    Passenger:
+      type: object
+      properties:
+        name:
+          type: string
+          example: "Ravi Kumar"
+        age:
+          type: integer
+          example: 28
+        gender:
+          type: string
+          enum: [male, female, other]
+          example: "male"
+
+paths:
+  # --- Authentication ---
+  /api/v1/auth/register:
+    post:
+      summary: Register a new user
+      tags: [Authentication]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, email, password, age, gender]
+              properties:
+                name: { type: string }
+                email: { type: string }
+                password: { type: string }
+                age: { type: integer }
+                gender: { type: string, enum: [male, female, other] }
+      responses:
+        '200':
+          description: Registration successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token: { type: string, example: "eyJhbG..." }
+                  user: { $ref: '#/components/schemas/User' }
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/GenericError' }
+        '409':
+          description: Email already registered
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/GenericError' }
+
+  /api/v1/auth/login:
+    post:
+      summary: Login user
+      tags: [Authentication]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string }
+                password: { type: string }
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token: { type: string, example: "eyJhbG..." }
+                  user: { $ref: '#/components/schemas/User' }
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/GenericError' }
+
+  /api/v1/auth/me:
+    get:
+      summary: Get current user details
+      tags: [Authentication]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: User details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user: { $ref: '#/components/schemas/User' }
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/GenericError' }
+
+  # --- Trains ---
+  /api/v1/trains:
+    get:
+      summary: Search for trains
+      tags: [Trains]
+      parameters:
+        - name: source
+          in: query
+          required: true
+          schema: { type: string }
+        - name: destination
+          in: query
+          required: true
+          schema: { type: string }
+        - name: date
+          in: query
+          required: true
+          schema: { type: string, format: date }
+      responses:
+        '200':
+          description: List of trains
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Train' }
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/GenericError' }
+
+  # --- Bookings ---
+  /api/v1/bookings/hold:
+    post:
+      summary: Create a seat hold
+      tags: [Bookings]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [trainId, date, classCode, passengers]
+              properties:
+                trainId: { type: string }
+                date: { type: string, format: date }
+                classCode: { type: string }
+                passengers:
+                  type: array
+                  items: { $ref: '#/components/schemas/Passenger' }
+      responses:
+        '201':
+          description: Seat hold created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  holdId: { type: string, example: "h9988" }
+                  totalFare: { type: number, example: 1100 }
+        '409':
+          description: No seats available
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/GenericError' }
+
+  /api/v1/bookings/{holdId}/confirm:
+    post:
+      summary: Confirm booking and initiate payment
+      tags: [Bookings]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: holdId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Payment URL generated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  paymentUrl: { type: string, format: uri, example: "https://rzp.io/l/xyz123" }
+        '410':
+          description: Hold expired
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/GenericError' }
+
+  /api/v1/bookings/{bookingId}:
+    get:
+      summary: Get booking details
+      tags: [Bookings]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: bookingId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Booking details
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Booking' }
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/GenericError' }
+
+  /api/v1/bookings/history:
+    get:
+      summary: Get user booking history
+      tags: [Bookings]
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of bookings
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Booking' }
+
+  /api/v1/bookings/{bookingId}/cancel:
+    post:
+      summary: Cancel a booking
+      tags: [Bookings]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: bookingId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Cancelled successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean, example: true }
+                  message: { type: string, example: "Booking cancelled successfully" }
+        '400':
+          description: Cannot cancel
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/GenericError' }
