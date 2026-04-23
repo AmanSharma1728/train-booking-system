@@ -1,0 +1,117 @@
+.search-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  align-items: flex-end;
+  padding: 1.5rem;
+  border-radius: var(--radius-lg);
+  max-width: 1000px;
+  width: 100%;
+  margin: 0 auto;
+  transition: var(--transition);
+
+  &.glass {
+    background: rgba(15, 23, 42, 0.6); // Darker glass for better contrast
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+
+    label {
+      color: rgba(255, 255, 255, 0.9) !important;
+      font-weight: 600;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    }
+
+    input {
+      background: rgba(255, 255, 255, 0.08);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+
+      &:focus {
+        background: rgba(255, 255, 255, 0.12);
+        border-color: var(--primary);
+        box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.2);
+      }
+
+      &[type="date"]::-webkit-calendar-picker-indicator {
+        filter: invert(1);
+        cursor: pointer;
+      }
+    }
+  }
+
+  &.standard {
+    background: #fff;
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow-md);
+
+    label {
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    input {
+      background: var(--input-bg);
+      color: var(--text-main);
+      border: 1px solid var(--border);
+
+      &:focus {
+        background: #fff;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+      }
+    }
+  }
+
+  .search-inputs {
+    display: flex;
+    flex: 1;
+    gap: 1rem;
+    min-width: 300px;
+
+    .input-group {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+
+      label {
+        font-size: 0.875rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      input {
+        width: 100%;
+        padding: 0.875rem 1rem;
+        border-radius: var(--radius-md);
+        font-size: 1rem;
+        font-weight: 500;
+        outline: none;
+        transition: var(--transition);
+      }
+    }
+  }
+
+  .search-btn {
+    height: 54px;
+    padding: 0 2.5rem;
+    font-size: 1rem;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 768px) {
+  .search-bar {
+    .search-inputs {
+      flex-direction: column;
+      width: 100%;
+    }
+
+    .search-btn {
+      width: 100%;
+    }
+  }
+}
