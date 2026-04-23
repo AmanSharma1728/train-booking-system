@@ -1,9 +1,20 @@
 const express = require("express");
 const cors = require("cors");
+const swaggerUi = require("swagger-ui-express");
+const YAML = require("yamljs");
+const path = require("path");
+
 const routes = require("./routes");
 const logger = require("./shared/utils/logger");
 
 const app = express();
+
+// ======================
+// Load OpenAPI spec
+// ======================
+const swaggerDocument = YAML.load(
+  path.join(__dirname, "../docs/openapi.yaml")
+);
 
 // ======================
 // Global Middlewares
@@ -22,8 +33,18 @@ app.get("/health", (req, res) => {
 // Routes
 // ======================
 app.use("/api/v1", routes);
+
 // ======================
-// 404 Handler (IMPORTANT)
+// Swagger Docs
+// ======================
+app.use(
+  "/api-docs",
+  swaggerUi.serve,
+  swaggerUi.setup(swaggerDocument)
+);
+
+// ======================
+// 404 Handler
 // ======================
 app.use((req, res) => {
   res.status(404).json({
@@ -38,9 +59,7 @@ app.use((req, res) => {
 app.use((err, req, res, next) => {
   logger.error(err.stack || err.message);
 
-  const status = err.status || 500;
-
-  res.status(status).json({
+  res.status(err.status || 500).json({
     success: false,
     error: err.message || "Internal Server Error",
   });
