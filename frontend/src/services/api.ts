@@ -2,7 +2,7 @@ import type { User } from "../types/Auth";
 import type { Train, Passenger, Ticket, ClassCode } from "../types/Booking";
 import type { HoldResponse, RazorpayInitResponse } from "../types/ApiResponse";
 
-const BASE_URL = 'http://localhost:3000/api';
+const BASE_URL = 'http://localhost:3000/api/v1';
 
 const fetchAuth = async(endpoint:string,options:RequestInit ={})=>{
     const token = localStorage.getItem('token');
