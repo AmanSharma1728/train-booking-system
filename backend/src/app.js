@@ -1,9 +1,9 @@
 const express = require("express");
 const cors = require("cors");
-const routes = require("./routes");
+// const routes = require("./routes");
 const logger = require("./shared/utils/logger");
-
 const app = express();
+const routes = require("../src/modules/train/train.routes")
 
 // Middlewares
 app.use(cors());
@@ -15,7 +15,7 @@ app.get("/health", (req, res) => {
 });
 
 // Routes (we'll add later)
-app.use("/api", routes);
+app.use("/api/v1", routes);
 
 // Global error handler (basic for now)
 app.use((err, req, res, next) => {
