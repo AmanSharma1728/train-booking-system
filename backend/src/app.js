@@ -7,8 +7,8 @@ const path = require("path");
 // ======================
 // Route Imports
 // ======================
-const authRoutes = require("./routes"); // Your Auth/User handler
-const trainRoutes = require("./modules/train/train.routes"); // Tanisha's Train handler
+const authRoutes = require("./routes"); 
+const trainRoutes = require("./modules/train/train.routes"); 
 const logger = require("./shared/utils/logger");
 
 const app = express();
