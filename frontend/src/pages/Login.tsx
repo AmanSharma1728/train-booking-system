@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
-import { api } from "../services/api";
+import { AuthContext } from "../context/AuthContext";
 import { LogIn, Mail, Lock, ShieldCheck } from "lucide-react";
 import "./Login.scss";
 
 const Login = () => {
+  const { login } = useContext(AuthContext);
   const navigate = useNavigate();
   const location = useLocation();
   const [email, setEmail] = useState("");
@@ -21,8 +22,7 @@ const Login = () => {
     setError("");
 
     try {
-      await api.login(email, password);
-      // Redirect back to where they came from (e.g., TrainDetails)
+      await login(email, password);
       navigate(from, { state: { train: trainData }, replace: true });
     } catch (err: any) {
       setError(err.message || "Failed to login. Please check your credentials.");
