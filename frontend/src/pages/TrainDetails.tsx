@@ -80,7 +80,8 @@ const TrainDetails = () => {
           age: parseInt(p.age),
           gender: (p.gender as any) || "male"
         })),
-        bookingDate: train.date || new Date().toISOString().split('T')[0]
+        bookingDate: train.date || new Date().toISOString().split('T')[0],
+        requestedSeats: passengers.length
       });
       
       console.log("Hold successful:", response);

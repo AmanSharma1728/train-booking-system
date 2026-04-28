@@ -13,13 +13,13 @@
     "api:docs": "echo 'View docs at http://localhost:3000/api-docs'",
     "seed": "node scripts/seed.js",
     "test": "echo \"Error: no test specified\" && exit 1"
-    
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "bcrypt": "^6.0.0",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",

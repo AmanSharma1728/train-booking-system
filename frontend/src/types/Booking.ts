@@ -40,4 +40,5 @@ export interface Ticket {
   status: "SEAT_HELD" | "PAYMENT_PENDING" | "CONFIRMED" | "RAC" | "WAITLISTED" | "CANCELLED" | "EXPIRED";
   pnr?: string;                 // Allocated after confirmation
   ttl?: string;                 // ISO timestamp — seat hold expiry countdown. Only present when status is "SEAT_HELD".
+  requestedSeats: number;
 }

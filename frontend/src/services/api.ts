@@ -76,6 +76,7 @@ export const api = {
     classCode: ClassCode;
     passengers: Passenger[];
     bookingDate: string;
+    requestedSeats: number;
   }): Promise<HoldResponse> => {
     return fetchAuth("/bookings/hold", {
       method: "POST",
@@ -84,6 +85,7 @@ export const api = {
         classCode: payload.classCode,
         date: payload.bookingDate,
         passengers: payload.passengers,
+        requestedSeats: payload.requestedSeats,
       }),
     }) as Promise<HoldResponse>;
   },

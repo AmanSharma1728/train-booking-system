@@ -9,6 +9,7 @@ const path = require("path");
 // ======================
 const authRoutes = require("./routes"); 
 const trainRoutes = require("./modules/train/train.routes"); 
+const bookingRoutes = require("./modules/booking/booking.routes");
 const logger = require("./shared/utils/logger");
 
 const app = express();
@@ -44,6 +45,7 @@ app.get("/health", (req, res) => {
  */
 app.use("/api/v1", authRoutes); 
 app.use("/api/v1", trainRoutes);
+app.use("/api/v1",bookingRoutes)
 
 // ======================
 // Swagger Docs
