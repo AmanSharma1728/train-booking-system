@@ -51,6 +51,15 @@ class LockService {
       return false;
     }
   }
+
+  async isHoldValid(holdKey) {
+    if (!redisClient.isOpen) {
+      logger.error("Redis is not open. Cannot verify hold.");
+      return false;
+    }
+    const val = await redisClient.get(holdKey);
+    return val !== null;
+  }
 }
 
 module.exports = new LockService();

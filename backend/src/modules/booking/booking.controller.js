@@ -7,10 +7,10 @@ class BookingController {
 
   holdSeat = async (req, res, next) => {
     try {
-      const { trainId, date, classCode, requestedSeats } = req.body;
+      const { trainId, date, classCode, requestedSeats, passengers } = req.body;
       const userId = req.user.id;
 
-      if (!trainId || !date || !classCode || !requestedSeats) {
+      if (!trainId || !date || !classCode || !requestedSeats || !passengers) {
         return res.status(400).json({ error: "All fields are required" });
       }
 
@@ -18,11 +18,16 @@ class BookingController {
         return res.status(400).json({ error: "Invalid number of seats" });
       }
 
+      if (!Array.isArray(passengers) || passengers.length !== requestedSeats) {
+        return res.status(400).json({ error: "Passenger details must match requested seats" });
+      }
+
       const result = await this.bookingService.holdSeat(userId, {
         trainId,
         date,
         classCode,
         requestedSeats,
+        passengers,
       });
 
       return res.status(201).json(result);
@@ -31,6 +36,40 @@ class BookingController {
         return res.status(err.status).json({ error: err.message });
       }
       logger.error("Booking Controller Error: " + err.message);
+      next(err);
+    }
+  };
+
+  confirmBooking = async (req, res, next) => {
+    try {
+      const { id } = req.params;
+      const userId = req.user.id;
+
+      const result = await this.bookingService.confirmBooking(userId, id);
+
+      return res.status(200).json(result);
+    } catch (err) {
+      if (err.status) {
+        return res.status(err.status).json({ error: err.message });
+      }
+      logger.error("Booking Controller (Confirm) Error: " + err.message);
+      next(err);
+    }
+  };
+
+  getBooking = async (req, res, next) => {
+    try {
+      const { id } = req.params;
+      const userId = req.user.id;
+
+      const result = await this.bookingService.getBookingById(userId, id);
+
+      return res.status(200).json(result);
+    } catch (err) {
+      if (err.status) {
+        return res.status(err.status).json({ error: err.message });
+      }
+      logger.error("Booking Controller (Get) Error: " + err.message);
       next(err);
     }
   };

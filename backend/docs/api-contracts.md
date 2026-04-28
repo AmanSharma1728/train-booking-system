@@ -79,17 +79,18 @@ Searches for trains between two stations on a specific date.
 
 ### 3.1 `POST /bookings/hold` (Protected)
 - **Middleware**: `AuthMiddleware`
-- **Request Body:** `{ "trainId", "date", "classCode", "passengers": [{ "name", "age", "gender" }] }`
-- **Response (201 Created):** `{ "holdId", "totalFare" }`
+- **Request Body:** `{ "trainId", "date", "classCode", "requestedSeats", "passengers": [{ "name", "age", "gender" }] }`
+- **Response (201 Created):** `{ "holdId", "totalFare", "expiry_timestamp" }`
 - **Error Scenarios:**
-  - `409 Conflict`: `{ "error": "Seats are no longer available in this class" }`
+  - `409 Conflict`: `{ "error": "Not enough seats available" }`
+  - `503 Service Unavailable`: `{ "error": "Service temporarily unavailable. Please try again later." }`
 
 ### 3.2 `POST /bookings/:holdId/confirm` (Protected)
 **Payment Gateway: Razorpay Hosted Page**
 - **Middleware**: `AuthMiddleware`
 - **Request Body:** _(empty — no card details collected by frontend)_
-- **Behaviour:** Backend creates a Razorpay order and returns a hosted payment URL. Frontend immediately redirects the user to this URL.
-- **Response (200 OK):** `{ "paymentUrl": "https://rzp.io/l/xyz123" }`
+- **Behaviour:** Backend verifies the Redis hold is still valid and returns a mock payment URL.
+- **Response (200 OK):** `{ "paymentUrl": "https://rzp.io/l/mock_payment_<id>" }`
 - **Error Scenarios:**
   - `410 Gone`: `{ "error": "Seat hold has expired" }`
 
