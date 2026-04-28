@@ -65,25 +65,103 @@
       }
     }
 
-    .logout-btn {
-      background: #f1f5f9;
+    // ── Avatar & Dropdown ──────────────────────────────────────
+    .avatar-wrapper {
+      position: relative;
+    }
+
+    .avatar-circle {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, hsl(221, 83%, 53%), hsl(262, 83%, 58%));
+      color: #fff;
+      font-weight: 800;
+      font-size: 0.8rem;
       border: none;
-      padding: 0.45rem 1rem;
-      border-radius: 2rem;
-      color: #64748b;
-      font-weight: 700;
-      font-size: 0.7rem;
-      text-transform: uppercase;
-      letter-spacing: 0.4px;
+      cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 0.4rem;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      
+      justify-content: center;
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      flex-shrink: 0;
+
       &:hover {
-        background: #fee2e2;
-        color: #ef4444;
+        transform: scale(1.08);
+        box-shadow: 0 4px 14px rgba(37, 99, 235, 0.45);
+      }
+    }
+
+    .avatar-dropdown {
+      position: absolute;
+      top: calc(100% + 0.6rem);
+      right: 0;
+      min-width: 200px;
+      background: #fff;
+      border: 1px solid rgba(0, 0, 0, 0.07);
+      border-radius: 0.85rem;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+      padding: 0.4rem;
+      z-index: 9999;
+      animation: dropIn 0.15s ease;
+
+      @keyframes dropIn {
+        from { opacity: 0; transform: translateY(-6px); }
+        to   { opacity: 1; transform: translateY(0); }
+      }
+
+      .dropdown-user-info {
+        padding: 0.55rem 0.75rem 0.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.1rem;
+
+        .dropdown-name {
+          font-weight: 700;
+          font-size: 0.82rem;
+          color: #1e293b;
+        }
+        .dropdown-email {
+          font-size: 0.7rem;
+          color: #94a3b8;
+        }
+      }
+
+      .dropdown-divider {
+        height: 1px;
+        background: #f1f5f9;
+        margin: 0.25rem 0;
+      }
+
+      .dropdown-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 0.75rem;
+        border-radius: 0.5rem;
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: #475569;
+        text-decoration: none;
+        background: none;
+        border: none;
+        width: 100%;
+        cursor: pointer;
+        transition: background 0.15s ease, color 0.15s ease;
+
+        svg { opacity: 0.7; flex-shrink: 0; }
+
+        &:hover {
+          background: #f1f5f9;
+          color: #1e293b;
+          svg { opacity: 1; }
+        }
+
+        &--danger:hover {
+          background: #fef2f2;
+          color: #ef4444;
+        }
       }
     }
   }

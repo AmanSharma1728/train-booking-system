@@ -18,6 +18,7 @@ This document defines the list of pages, their purpose, routing URLs, and the re
 | **RAC/Waitlist Result** | Show queue status and next steps | `/booking/rac` | Authenticated | Expected clearance text |
 | **Booking History** | List all past and active bookings | `/history` | Authenticated | Loading, Empty, Status Filters |
 | **Cancellation Flow** | Cancellation confirmation and post-cancel status | `/cancel` | Authenticated, Active Booking | Cancellation feedback |
+| **User Profile** | View account details and logout | `/profile` | Authenticated | Loading (auth redirect if unauthenticated) |
 
 ## Admin Pages
 
