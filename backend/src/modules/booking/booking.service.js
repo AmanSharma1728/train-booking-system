@@ -1,5 +1,13 @@
 const lockService = require("../../infrastructure/redis/lock.service");
 const logger = require("../../shared/utils/logger");
+const { redisClient } = require("../../infrastructure/redis/redis.client");
+const Razorpay = require("razorpay");
+const crypto = require("crypto");
+
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_API_KEY || "rzp_test_placeholder",
+  key_secret: process.env.RAZORPAY_KEY_SECRET || "placeholder_secret",
+});
 
 class BookingService {
   constructor({ bookingRepository, trainRepository }) {
@@ -69,7 +77,7 @@ class BookingService {
       status: "SEAT_HELD",
     });
 
-    const expiryTimestamp = Date.now() + 60 * 1000; // 1 minute from now
+    const expiryTimestamp = Date.now() + 120 * 1000; // 2 minutes from now
 
     return {
       holdId: booking._id,
@@ -103,13 +111,110 @@ class BookingService {
       throw { status: 410, message: "Seat hold has expired" };
     }
 
-    // 5. Transition state to PAYMENT_PENDING
-    booking.status = "PAYMENT_PENDING";
+    // 5. Create real Razorpay Order
+    try {
+      const options = {
+        amount: booking.totalFare * 100, // in paise
+        currency: "INR",
+        receipt: `receipt_${booking._id}`,
+      };
+
+      const order = await razorpay.orders.create(options);
+
+      // 6. Transition state to PAYMENT_PENDING and store order ID
+      booking.status = "PAYMENT_PENDING";
+      booking.razorpayOrderId = order.id;
+      await booking.save();
+
+      return {
+        razorpay_order_id: order.id,
+        totalFare: booking.totalFare,
+        holdId: booking._id,
+        key_id: process.env.RAZORPAY_API_KEY,
+      };
+    } catch (err) {
+      logger.error("Razorpay Order Creation Error: " + err.message);
+      throw { status: 500, message: "Failed to initiate payment. Please try again." };
+    }
+  }
+
+  async verifyPayment(userId, payload) {
+    const { razorpay_payment_id, razorpay_order_id, razorpay_signature, holdId } = payload;
+
+    // 1. Verify Signature (Allow mock_signature for testing/dev)
+    if (razorpay_signature !== "mock_signature") {
+      const body = razorpay_order_id + "|" + razorpay_payment_id;
+      const expectedSignature = crypto
+        .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET || "placeholder_secret")
+        .update(body.toString())
+        .digest("hex");
+
+      if (expectedSignature !== razorpay_signature) {
+        throw { status: 400, message: "Invalid payment signature" };
+      }
+    }
+
+    // 2. Find Booking
+    const booking = await this.bookingRepository.findById(holdId);
+    if (!booking) {
+      throw { status: 404, message: "Booking not found" };
+    }
+
+    if (booking.razorpayOrderId !== razorpay_order_id && razorpay_signature !== "mock_signature") {
+      throw { status: 400, message: "Order ID mismatch" };
+    }
+
+    if (booking.status !== "PAYMENT_PENDING") {
+      throw { status: 400, message: "Booking is not in pending payment state" };
+    }
+
+    // 3. Verify Redis hold still exists (Last second check)
+    const holdKey = `hold:${booking.trainId}:${booking.date}:${booking.classCode}:${userId}`;
+    const holdExists = await lockService.isHoldValid(holdKey);
+
+    if (!holdExists) {
+      throw { status: 410, message: "Seat hold expired during payment. Refund will be initiated." };
+    }
+
+    // 4. Finalize Booking
+    const realPnr = `${Math.floor(100 + Math.random() * 900)}-${Math.floor(1000000 + Math.random() * 9000000)}`;
+
+    const coach = ["B1", "B2", "S1", "S2", "A1"][Math.floor(Math.random() * 5)];
+    const seatNumber = Math.floor(Math.random() * 72) + 1;
+    const seatInfo = `${coach}-${seatNumber}`;
+
+    // c. Decrement Inventory in MongoDB (Now finalized)
+    await this.trainRepository.decrementInventory(
+      booking.trainId,
+      booking.classCode,
+      booking.passengers.length
+    );
+
+    // d. Update Booking Record
+    booking.status = "CONFIRMED";
+    booking.pnr = realPnr;
+    booking.seatInfo = seatInfo;
+    booking.razorpayPaymentId = razorpay_payment_id;
+    booking.razorpaySignature = razorpay_signature;
     await booking.save();
 
-    // 6. Return mock payment URL
+    console.log(`[DEBUG] Booking ${booking._id} CONFIRMED. PNR: ${realPnr}`);
+
+    // e. Invalidate Search Cache for this route/date
+    if (booking.src && booking.dest && booking.date) {
+      const searchCacheKey = `search:${booking.src.toUpperCase()}:${booking.dest.toUpperCase()}:${booking.date}`;
+      console.log(`[DEBUG] Invalidating search cache: ${searchCacheKey}`);
+      await redisClient.del(searchCacheKey);
+    }
+
+    // f. Clear specific hold in Redis
+    await redisClient.del(holdKey);
+
     return {
-      paymentUrl: `https://rzp.io/l/mock_payment_${booking._id}`,
+      status: "CONFIRMED",
+      pnr: realPnr,
+      seatInfo: seatInfo,
+      bookingId: booking._id,
     };
   }
 

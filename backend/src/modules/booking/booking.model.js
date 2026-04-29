@@ -17,19 +17,15 @@ const bookingSchema = new mongoose.Schema(
     },
     src: {
       type: String,
-      required: true,
     },
     dest: {
       type: String,
-      required: true,
     },
     departure: {
       type: String,
-      required: true,
     },
     arrival: {
       type: String,
-      required: true,
     },
     pnr: {
       type: String,
@@ -65,6 +61,18 @@ const bookingSchema = new mongoose.Schema(
         "CANCELLED",
       ],
       default: "SEAT_HELD",
+    },
+    razorpayOrderId: {
+      type: String,
+    },
+    razorpayPaymentId: {
+      type: String,
+    },
+    razorpaySignature: {
+      type: String,
+    },
+    seatInfo: {
+      type: String, // e.g., "B2-42"
     },
   },
   { timestamps: true }

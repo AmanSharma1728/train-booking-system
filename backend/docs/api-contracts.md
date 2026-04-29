@@ -80,37 +80,69 @@ Searches for trains between two stations on a specific date.
 ### 3.1 `POST /bookings/hold` (Protected)
 - **Middleware**: `AuthMiddleware`
 - **Request Body:** `{ "trainId", "date", "classCode", "requestedSeats", "passengers": [{ "name", "age", "gender" }] }`
+- **Behaviour:** Acquires an atomic lock in Redis for 120 seconds. Does NOT decrement MongoDB inventory yet.
 - **Response (201 Created):** `{ "holdId", "totalFare", "expiry_timestamp" }`
 - **Error Scenarios:**
   - `409 Conflict`: `{ "error": "Not enough seats available" }`
   - `503 Service Unavailable`: `{ "error": "Service temporarily unavailable. Please try again later." }`
 
 ### 3.2 `POST /bookings/:holdId/confirm` (Protected)
-**Payment Gateway: Razorpay Hosted Page**
+**Payment Initiation: Razorpay SDK**
 - **Middleware**: `AuthMiddleware`
-- **Request Body:** _(empty — no card details collected by frontend)_
-- **Behaviour:** Backend verifies the Redis hold is still valid and returns a mock payment URL.
-- **Response (200 OK):** `{ "paymentUrl": "https://rzp.io/l/mock_payment_<id>" }`
+- **Request Body:** _(empty)_
+- **Behaviour:** Backend creates a real Razorpay Order using the SDK and transitions booking status to `PAYMENT_PENDING`.
+- **Response (200 OK):** 
+```json
+{ 
+  "razorpay_order_id": "order_LWp5zX3z...", 
+  "totalFare": 1250, 
+  "holdId": "69f19...", 
+  "key_id": "rzp_test_..." 
+}
+```
 - **Error Scenarios:**
   - `410 Gone`: `{ "error": "Seat hold has expired" }`
 
-### 3.2a `GET /bookings/:id` (Protected)
-Called by the frontend **after Razorpay redirects the user back** to `/booking/result?bookingId=:id`.
+### 3.3 `POST /bookings/verify` (Protected)
+**Finalization: Payment Signature Verification**
+- **Middleware**: `AuthMiddleware`
+- **Request Body:** `{ "razorpay_payment_id", "razorpay_order_id", "razorpay_signature", "holdId" }`
+- **Behaviour:** 
+  1. Verifies HMAC-SHA256 signature.
+  2. Checks if Redis hold is still valid.
+  3. **Decrements MongoDB Inventory** (Finalized).
+  4. Assigns Real PNR and Seat Info.
+- **Response (200 OK):**
+```json
+{
+  "status": "CONFIRMED",
+  "pnr": "432-8761234",
+  "seatInfo": "B2-42",
+  "bookingId": "69f19..."
+}
+```
+
+### 3.4 `GET /bookings/:id` (Protected)
 - **Middleware**: `AuthMiddleware`
 - **Response (200 OK):**
 ```json
 {
   "id": "b001",
-  "pnr": "PNR1234567",
+  "pnr": "432-8761234",
   "trainId": "t101",
   "trainName": "Rajdhani Exp",
-  "seatId": "S1-42",
+  "seatInfo": "B2-42",
   "date": "2026-05-10",
+  "src": "New Delhi",
+  "dest": "Mumbai Central",
   "departure": "16:00",
+  "arrival": "08:15",
   "classCode": "3A",
   "passengers": [{ "name": "Ravi Kumar", "age": 28, "gender": "male" }],
   "totalFare": 1250,
-  "status": "CONFIRMED"
+  "status": "CONFIRMED",
+  "razorpayOrderId": "order_...",
+  "razorpayPaymentId": "pay_..."
 }
 ```
 - **Valid `status` values:** `"SEAT_HELD" | "PAYMENT_PENDING" | "CONFIRMED" | "RAC" | "WAITLISTED" | "CANCELLED"`

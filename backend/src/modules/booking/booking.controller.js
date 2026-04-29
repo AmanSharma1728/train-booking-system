@@ -73,6 +73,23 @@ class BookingController {
       next(err);
     }
   };
+
+  verifyPayment = async (req, res, next) => {
+    try {
+      const userId = req.user.id;
+      const payload = req.body;
+
+      const result = await this.bookingService.verifyPayment(userId, payload);
+
+      return res.status(200).json(result);
+    } catch (err) {
+      if (err.status) {
+        return res.status(err.status).json({ error: err.message });
+      }
+      logger.error("Booking Controller (Verify) Error: " + err.message);
+      next(err);
+    }
+  };
 }
 
 module.exports = BookingController;
