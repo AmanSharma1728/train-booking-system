@@ -20,7 +20,7 @@ class LockService {
 
     const pattern = `hold:${trainId}:${date}:${classCode}:*`;
     const newKey = `hold:${trainId}:${date}:${classCode}:${userId}`;
-    const ttl = 600; // 10 minutes
+    const ttl = 60; // 1 minute
 
     const luaScript = `
       local keys = redis.call('KEYS', ARGV[1])

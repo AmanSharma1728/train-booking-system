@@ -29,9 +29,12 @@ export interface Ticket {
   id: string;                   // Booking / hold ID
   trainId: string;
   trainName: string;
-  seatId: string;               // Specific seat or berth identifier assigned by backend
+  src: string;
+  dest: string;
+  seatId?: string;               // Specific seat or berth identifier assigned by backend
   date: string;                 // Travel date (YYYY-MM-DD)
-  departure: string;            // Departure time ("HH:MM") — used to compute whether the journey has passed
+  departure: string;            // Departure time ("HH:MM")
+  arrival: string;              // Arrival time ("HH:MM")
   classCode: ClassCode;
   passengers: Passenger[];
   totalFare: number;

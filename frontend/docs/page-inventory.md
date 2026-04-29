@@ -10,11 +10,9 @@ This document defines the list of pages, their purpose, routing URLs, and the re
 | **Register** | Account creation | `/register` | Public (Unauthenticated) | Form Validation, Loading, Error |
 | **Login** | User authentication | `/login` | Public (Unauthenticated) | Form Validation, Error (Invalid Auth) |
 | **Search Results** | List matching trains and basic availability | `/search` | Public | Loading, Empty (No trains), Error |
-| **Train Details & Availability** | Detailed seat availability status, class selection | `/train/:id` | Public | Loading, Auto-refresh State |
-| **Passenger Details (Booking)** | Collect passenger info and confirm class | `/booking` | Authenticated | Form Validation |
-| **Booking Review (Hold)** | Review seat hold, check timer, proceed to pay | `/booking/:id/review` | Authenticated, Active Hold | Timer/Expiry State, Fare Summary |
-| **Payment Status** | Handle payment redirect and callback | `/payment` | Authenticated, Payment Initiated | Pending, Success, Failure, Timeout |
-| **Booking Confirmation** | Show PNR, booking ID, final status | `/booking/confirmation` | Authenticated, Post-Payment | Confirmed, RAC, Waitlist States |
+| **Train Details & Booking Form** | Detailed availability and passenger info collection | `/train/:id` | Public / Authenticated | Loading, Form Validation |
+| **Booking Review & Payment** | Review seat hold, check timer, proceed to pay | `/payment` | Authenticated, Active Hold | Timer/Expiry, Toast Notifications |
+| **Booking Confirmation** | Show PNR, route details, and final ticket status | `/confirmation/:id` | Authenticated, Post-Payment | Confirmed, RAC, Waitlist States |
 | **RAC/Waitlist Result** | Show queue status and next steps | `/booking/rac` | Authenticated | Expected clearance text |
 | **Booking History** | List all past and active bookings | `/history` | Authenticated | Loading, Empty, Status Filters |
 | **Cancellation Flow** | Cancellation confirmation and post-cancel status | `/cancel` | Authenticated, Active Booking | Cancellation feedback |

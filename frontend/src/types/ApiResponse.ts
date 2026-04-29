@@ -1,6 +1,7 @@
 export type HoldResponse = {
   holdId: string;
   totalFare: number;
+  expiry_timestamp: number;
 };
 
 // Backend creates a Razorpay order and returns the hosted payment URL.

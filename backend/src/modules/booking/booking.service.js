@@ -57,6 +57,10 @@ class BookingService {
       user: userId,
       trainId,
       trainName: train.name,
+      src: train.src,
+      dest: train.dest,
+      departure: train.departure,
+      arrival: train.arrival,
       pnr: tmpPnr,
       date,
       classCode,
@@ -65,7 +69,7 @@ class BookingService {
       status: "SEAT_HELD",
     });
 
-    const expiryTimestamp = Date.now() + 600 * 1000; // 10 minutes from now
+    const expiryTimestamp = Date.now() + 60 * 1000; // 1 minute from now
 
     return {
       holdId: booking._id,

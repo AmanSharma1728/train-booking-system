@@ -2,11 +2,13 @@ import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { api } from "../services/api";
 import { Train as TrainIcon, User, ArrowRight, ShieldCheck } from "lucide-react";
+import { useToast } from "../context/ToastContext";
 import type { Train, ClassCode } from "../types/Booking";
 import "./TrainDetails.scss";
 
 const TrainDetails = () => {
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const location = useLocation();
   
   const [train] = useState<Train | null>(location.state?.train || null);
@@ -88,9 +90,9 @@ const TrainDetails = () => {
       localStorage.setItem('currentHold', JSON.stringify({
         ...response,
         passengersCount: passengers.length,
-        totalFare: (train.inventory[selectedClass]?.price || 0) * passengers.length
       }));
       
+      showToast("Seats secured! You have 1 minute to pay.", "success");
       navigate('/payment');
     } catch (err) {
       console.error("Hold failed:", err);
@@ -263,7 +265,7 @@ const TrainDetails = () => {
 
             <div className="security-note">
               <ShieldCheck size={16} />
-              <p>Seats are held for 10 minutes once you click book.</p>
+              <p>Seats are held for 1 minute once you click book.</p>
             </div>
 
             {validationError && (

@@ -1,5 +1,6 @@
 import "./App.scss";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { ToastProvider } from "./context/ToastContext";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import Home from "./pages/Home";
@@ -14,23 +15,25 @@ import Profile from "./pages/Profile";
 const App = () => {
   return (
     <Router>
-      <div className="app">
-        <Navbar />
-        <main>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/search" element={<Search />} />
-            <Route path="/train/:id" element={<TrainDetails />} />
-            <Route path="/payment" element={<Payment />} />
-            <Route path="/confirmation/:id" element={<Confirmation />} />
-            <Route path="/bookings" element={<div style={{padding: '100px', textAlign: 'center'}}><h2>My Bookings — Next Phase</h2><p>Coming up in the next issue.</p></div>} />
-            <Route path="/profile" element={<Profile />} />
-          </Routes>
-        </main>
-        <Footer />
-      </div>
+      <ToastProvider>
+        <div className="app">
+          <Navbar />
+          <main>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/search" element={<Search />} />
+              <Route path="/train/:id" element={<TrainDetails />} />
+              <Route path="/payment" element={<Payment />} />
+              <Route path="/confirmation/:id" element={<Confirmation />} />
+              <Route path="/bookings" element={<div style={{padding: '100px', textAlign: 'center'}}><h2>My Bookings — Next Phase</h2><p>Coming up in the next issue.</p></div>} />
+              <Route path="/profile" element={<Profile />} />
+            </Routes>
+          </main>
+          <Footer />
+        </div>
+      </ToastProvider>
     </Router>
   );
 };

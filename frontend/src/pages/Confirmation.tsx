@@ -81,18 +81,18 @@ const Confirmation = () => {
             
             <div className="route-overview">
               <div className="station from">
-                <span className="code">NDLS</span>
+                <span className="code">{booking.src.substring(0, 4).toUpperCase()}</span>
                 <span className="time">{booking.departure}</span>
-                <span className="city">New Delhi</span>
+                <span className="city">{booking.src}</span>
               </div>
               <div className="journey-path">
                 <div className="line"></div>
                 <TicketIcon size={24} className="path-icon" />
               </div>
               <div className="station to">
-                <span className="code">BCT</span>
-                <span className="time">--:--</span>
-                <span className="city">Mumbai Central</span>
+                <span className="code">{booking.dest.substring(0, 4).toUpperCase()}</span>
+                <span className="time">{booking.arrival}</span>
+                <span className="city">{booking.dest}</span>
               </div>
             </div>
 

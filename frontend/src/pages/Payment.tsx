@@ -2,10 +2,12 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../services/api";
 import { CreditCard, Smartphone, Landmark, ShieldCheck, Clock, CheckCircle2 } from "lucide-react";
+import { useToast } from "../context/ToastContext";
 import "./Payment.scss";
 
 const Payment = () => {
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const [holdData, setHoldData] = useState<any>(null);
   const [timeLeft, setTimeLeft] = useState(600);
   const [selectedMethod, setSelectedMethod] = useState("upi");
@@ -15,17 +17,30 @@ const Payment = () => {
   useEffect(() => {
     const data = localStorage.getItem('currentHold');
     if (data) {
-      setHoldData(JSON.parse(data));
+      const parsed = JSON.parse(data);
+      setHoldData(parsed);
+      
+      if (parsed.expiry_timestamp) {
+        const remaining = Math.max(0, Math.floor((parsed.expiry_timestamp - Date.now()) / 1000));
+        setTimeLeft(remaining);
+      }
     } else {
       navigate('/search');
     }
   }, [navigate]);
 
   useEffect(() => {
-    if (timeLeft <= 0) return;
+    if (timeLeft <= 0) {
+      if (holdData) {
+        showToast("Your seat hold has expired. Please search again.", "error");
+        localStorage.removeItem('currentHold');
+        navigate('/search');
+      }
+      return;
+    }
     const timer = setInterval(() => setTimeLeft(prev => prev - 1), 1000);
     return () => clearInterval(timer);
-  }, [timeLeft]);
+  }, [timeLeft, navigate, holdData, showToast]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -52,7 +67,7 @@ const Payment = () => {
       } catch (err) {
         setGatewayStep("IDLE");
         setShowMockGateway(false);
-        alert("Payment failed during verification. Your seat hold may have expired.");
+        showToast("Payment failed during verification. Your seat hold may have expired.", "error");
       }
     }, 2500);
   };
