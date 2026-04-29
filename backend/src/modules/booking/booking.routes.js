@@ -13,6 +13,7 @@ const bookingController = new BookingController(bookingService);
 
 router.post("/hold", authMiddleware, bookingController.holdSeat);
 router.post("/:id/confirm", authMiddleware, bookingController.confirmBooking);
+router.post("/verify", authMiddleware, bookingController.verifyPayment);
 router.get("/:id", authMiddleware, bookingController.getBooking);
 
 module.exports = router;

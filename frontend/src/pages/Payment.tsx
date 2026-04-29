@@ -9,7 +9,7 @@ const Payment = () => {
   const navigate = useNavigate();
   const { showToast } = useToast();
   const [holdData, setHoldData] = useState<any>(null);
-  const [timeLeft, setTimeLeft] = useState(600);
+  const [timeLeft, setTimeLeft] = useState(120);
   const [selectedMethod, setSelectedMethod] = useState("upi");
   const [showMockGateway, setShowMockGateway] = useState(false);
   const [gatewayStep, setGatewayStep] = useState<"IDLE" | "AUTHORIZING" | "VERIFYING" | "SUCCESS">("IDLE");
@@ -19,7 +19,7 @@ const Payment = () => {
     if (data) {
       const parsed = JSON.parse(data);
       setHoldData(parsed);
-      
+
       if (parsed.expiry_timestamp) {
         const remaining = Math.max(0, Math.floor((parsed.expiry_timestamp - Date.now()) / 1000));
         setTimeLeft(remaining);
@@ -56,9 +56,18 @@ const Payment = () => {
 
     setTimeout(async () => {
       setGatewayStep("VERIFYING");
-      
+
       try {
-        await api.initiatePayment(holdData.holdId); 
+        const confirmRes: any = await api.initiatePayment(holdData.holdId);
+
+        // Final Verification Step (In a real app, this would happen in Razorpay handler)
+        await api.verifyPayment({
+          razorpay_order_id: confirmRes.razorpay_order_id,
+          razorpay_payment_id: "pay_mock_" + Math.random().toString(36).substr(2, 9),
+          razorpay_signature: "mock_signature",
+          holdId: holdData.holdId
+        });
+
         setGatewayStep("SUCCESS");
         setTimeout(() => {
           localStorage.removeItem('currentHold');
@@ -126,7 +135,7 @@ const Payment = () => {
           <div className="methods-section">
             <h2>Select Payment Method</h2>
             <div className="methods-list">
-              <div 
+              <div
                 className={`method-item card ${selectedMethod === 'upi' ? 'selected' : ''}`}
                 onClick={() => setSelectedMethod('upi')}
               >
@@ -137,7 +146,7 @@ const Payment = () => {
                 </div>
               </div>
 
-              <div 
+              <div
                 className={`method-item card ${selectedMethod === 'card' ? 'selected' : ''}`}
                 onClick={() => setSelectedMethod('card')}
               >
@@ -148,7 +157,7 @@ const Payment = () => {
                 </div>
               </div>
 
-              <div 
+              <div
                 className={`method-item card ${selectedMethod === 'net' ? 'selected' : ''}`}
                 onClick={() => setSelectedMethod('net')}
               >
@@ -213,8 +222,8 @@ const Payment = () => {
               <div className="badge"><CheckCircle2 size={14} /> Verified Merchant</div>
             </div>
 
-            <button 
-              className="pay-btn" 
+            <button
+              className="pay-btn"
               onClick={handlePayment}
               disabled={showMockGateway}
             >

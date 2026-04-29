@@ -103,6 +103,18 @@ export const api = {
     return data;
   },
 
+  verifyPayment: async (payload: {
+    razorpay_payment_id: string;
+    razorpay_order_id: string;
+    razorpay_signature: string;
+    holdId: string;
+  }): Promise<any> => {
+    return fetchAuth("/bookings/verify", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  },
+
   getBooking: async (bookingId: string): Promise<Ticket> => {
     return fetchAuth(`/bookings/${bookingId}`) as Promise<Ticket>;
   },
