@@ -77,6 +77,10 @@ const Profile = () => {
 
         {/* Actions */}
         <div className="profile-actions">
+          <button className="btn-secondary" onClick={() => navigate("/history")}>
+            <CalendarDays size={15} />
+            My Bookings
+          </button>
           <button className="btn-logout" onClick={handleLogout}>
             <LogOut size={15} />
             Logout

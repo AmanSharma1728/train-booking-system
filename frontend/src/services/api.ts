@@ -116,11 +116,13 @@ export const api = {
   },
 
   getBooking: async (bookingId: string): Promise<Ticket> => {
-    return fetchAuth(`/bookings/${bookingId}`) as Promise<Ticket>;
+    const data = await fetchAuth(`/bookings/${bookingId}`) as any;
+    return { ...data, id: data._id || data.id };
   },
 
   getHistory: async (): Promise<Ticket[]> => {
-    return fetchAuth("/bookings/history") as Promise<Ticket[]>;
+    const data = await fetchAuth("/bookings/history") as any[];
+    return data.map(b => ({ ...b, id: b._id || b.id }));
   },
 
   cancelBooking: async (
