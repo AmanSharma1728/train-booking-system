@@ -165,3 +165,14 @@ Searches for trains between two stations on a specific date.
 - **Response (200 OK):** `{ "success": true, "message": "Booking cancelled successfully" }`
 - **Error Scenarios:**
   - `400 Bad Request`: `{ "error": "Booking cannot be cancelled at this time" }`
+
+---
+
+## 4. System Logic & State Machine
+
+### 4.1 Queue Promotion (Phase 4)
+When a `CONFIRMED` booking is cancelled, the system performs a cascading promotion to ensure seats are always filled:
+1. **RAC to Confirmed**: The earliest `RAC` booking for that train/date/class is promoted to `CONFIRMED` and receives the freed `seatInfo`.
+2. **Waitlist to RAC**: The earliest `WAITLISTED` booking is then promoted to `RAC` to fill the newly opened spot in the RAC queue.
+3. **Waitlist to Confirmed (Short-circuit)**: If the RAC queue is empty but there are people on the Waitlist, the first `WAITLISTED` person is promoted directly to `CONFIRMED`.
+4. **Inventory Recovery**: If no passengers are in the RAC or Waitlist queues, the seat is returned to the train's `available` inventory count.

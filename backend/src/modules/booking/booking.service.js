@@ -230,6 +230,118 @@ class BookingService {
 
     return booking;
   }
+
+  async getHistory(userId) {
+    return await this.bookingRepository.findByUser(userId);
+  }
+
+  async cancelBooking(userId, bookingId) {
+    // 1. Find booking
+    const booking = await this.bookingRepository.findById(bookingId);
+    if (!booking) {
+      throw { status: 404, message: "Booking not found" };
+    }
+
+    // 2. Verify ownership
+    if (booking.user.toString() !== userId) {
+      throw { status: 403, message: "Forbidden: You do not own this booking" };
+    }
+
+    // 3. Verify status (cannot cancel already cancelled or finished)
+    if (["CANCELLED"].includes(booking.status)) {
+      throw { status: 400, message: `Booking is already ${booking.status}` };
+    }
+
+    // 4. Verify Date (Future only)
+    const journeyDate = new Date(booking.date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (journeyDate < today) {
+      throw { status: 400, message: "Cannot cancel past journeys" };
+    }
+
+    const oldStatus = booking.status;
+    const freedSeat = booking.seatInfo;
+
+    // 5. Update status to CANCELLED
+    booking.status = "CANCELLED";
+    booking.seatInfo = null;
+    await booking.save();
+
+    // 6. Trigger Promotion Logic if it was a CONFIRMED or RAC seat
+    if (oldStatus === "CONFIRMED") {
+      await this.promoteQueue(booking.trainId, booking.date, booking.classCode, freedSeat);
+    } else if (oldStatus === "RAC") {
+      // If RAC was cancelled, we still need to fill that RAC spot from Waitlist
+      await this.promoteQueue(booking.trainId, booking.date, booking.classCode, null, true);
+    } else if (oldStatus === "WAITLISTED") {
+      // No promotion needed, just cancelled
+    }
+
+    // 7. Invalidate Cache
+    if (booking.src && booking.dest && booking.date) {
+      const searchCacheKey = `search:${booking.src.toUpperCase()}:${booking.dest.toUpperCase()}:${booking.date}`;
+      await redisClient.del(searchCacheKey);
+    }
+
+    return { success: true, message: "Booking cancelled successfully" };
+  }
+
+  async promoteQueue(trainId, date, classCode, freedSeat, isRACSpotOnly = false) {
+    try {
+      if (!isRACSpotOnly && freedSeat) {
+        // 1. Try to promote RAC -> CONFIRMED
+        const nextRAC = await this.bookingRepository.findFirstInQueue(trainId, date, classCode, "RAC");
+
+        if (nextRAC) {
+          nextRAC.status = "CONFIRMED";
+          nextRAC.seatInfo = freedSeat;
+          await nextRAC.save();
+          console.log(`[Promotion] Promoted RAC booking ${nextRAC._id} to CONFIRMED`);
+
+          // 2. Since an RAC spot opened, try to promote WAITLISTED -> RAC
+          const nextWL = await this.bookingRepository.findFirstInQueue(trainId, date, classCode, "WAITLISTED");
+          if (nextWL) {
+            nextWL.status = "RAC";
+            await nextWL.save();
+            console.log(`[Promotion] Promoted WAITLISTED booking ${nextWL._id} to RAC`);
+          }
+          return;
+        }
+
+        // 3. If no RAC, try to promote WAITLISTED -> CONFIRMED directly
+        const nextWLDirect = await this.bookingRepository.findFirstInQueue(trainId, date, classCode, "WAITLISTED");
+        if (nextWLDirect) {
+          nextWLDirect.status = "CONFIRMED";
+          nextWLDirect.seatInfo = freedSeat;
+          await nextWLDirect.save();
+          console.log(`[Promotion] Promoted WAITLISTED booking ${nextWLDirect._id} directly to CONFIRMED`);
+          return;
+        }
+
+        // 4. If no one in queue, increment available inventory
+        await this.trainRepository.incrementInventory(trainId, classCode, 1);
+        console.log(`[Promotion] No one in queue. Incremented inventory for train ${trainId}`);
+      } else {
+        // Case where only an RAC spot opened (RAC was cancelled)
+        const nextWL = await this.bookingRepository.findFirstInQueue(trainId, date, classCode, "WAITLISTED");
+        if (nextWL) {
+          nextWL.status = "RAC";
+          await nextWL.save();
+          console.log(`[Promotion] Promoted WAITLISTED booking ${nextWL._id} to RAC spot`);
+        } else {
+          // If no waitlist, it's a bit complex because our model currently only has 'available' for Confirmed.
+          // Usually RAC/Waitlist don't affect 'available' count until they are confirmed.
+          // But according to requirements, we should increment if queue is empty.
+          // However, for RAC cancellation with no waitlist, it doesn't necessarily open a CONFIRMED seat.
+          // We'll keep it simple: only increment if a confirmed seat is truly freed and no one wants it.
+        }
+      }
+    } catch (err) {
+      console.error(`[Promotion Error]: ${err.message}`);
+    }
+  }
 }
 
 module.exports = BookingService;

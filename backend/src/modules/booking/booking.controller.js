@@ -90,6 +90,35 @@ class BookingController {
       next(err);
     }
   };
+
+  getHistory = async (req, res, next) => {
+    try {
+      const userId = req.user.id;
+      const result = await this.bookingService.getHistory(userId);
+      return res.status(200).json(result);
+    } catch (err) {
+      if (err.status) {
+        return res.status(err.status).json({ error: err.message });
+      }
+      logger.error("Booking Controller (History) Error: " + err.message);
+      next(err);
+    }
+  };
+
+  cancelBooking = async (req, res, next) => {
+    try {
+      const { id } = req.params;
+      const userId = req.user.id;
+      const result = await this.bookingService.cancelBooking(userId, id);
+      return res.status(200).json(result);
+    } catch (err) {
+      if (err.status) {
+        return res.status(err.status).json({ error: err.message });
+      }
+      logger.error("Booking Controller (Cancel) Error: " + err.message);
+      next(err);
+    }
+  };
 }
 
 module.exports = BookingController;
