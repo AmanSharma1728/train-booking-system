@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { api } from "../services/api";
+import { AuthContext } from "../context/AuthContext";
 import { UserPlus, Mail, Lock, User, ShieldCheck } from "lucide-react";
 import "./Login.scss";
 
 const Register = () => {
+  const { register } = useContext(AuthContext);
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: "",
@@ -22,7 +23,7 @@ const Register = () => {
     setError("");
 
     try {
-      await api.register(
+      await register(
         formData.name,
         formData.email,
         formData.password,

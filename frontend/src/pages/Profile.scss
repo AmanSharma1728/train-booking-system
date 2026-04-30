@@ -130,20 +130,38 @@
 .profile-actions {
   padding: 1.25rem 2rem;
   border-top: 1px solid var(--border);
+  display: flex;
+  gap: 1rem;
 
-  .btn-logout {
+  button {
     display: flex;
     align-items: center;
     gap: 0.5rem;
     padding: 0.55rem 1.25rem;
-    background: #fef2f2;
-    color: #ef4444;
-    border: 1px solid #fecaca;
     border-radius: 2rem;
     font-size: 0.78rem;
     font-weight: 700;
     cursor: pointer;
     transition: all 0.2s ease;
+    border: 1px solid transparent;
+  }
+
+  .btn-secondary {
+    background: #f1f5f9;
+    color: #475569;
+    border-color: #e2e8f0;
+
+    &:hover {
+      background: #e2e8f0;
+      color: var(--text-main);
+      transform: translateY(-1px);
+    }
+  }
+
+  .btn-logout {
+    background: #fef2f2;
+    color: #ef4444;
+    border-color: #fecaca;
 
     &:hover {
       background: #ef4444;

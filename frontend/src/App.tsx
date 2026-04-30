@@ -11,6 +11,7 @@ import Payment from "./pages/Payment";
 import Register from "./pages/Register";
 import Confirmation from "./pages/Confirmation";
 import Profile from "./pages/Profile";
+import History from "./pages/History";
 
 const App = () => {
   return (
@@ -27,7 +28,8 @@ const App = () => {
               <Route path="/train/:id" element={<TrainDetails />} />
               <Route path="/payment" element={<Payment />} />
               <Route path="/confirmation/:id" element={<Confirmation />} />
-              <Route path="/bookings" element={<div style={{padding: '100px', textAlign: 'center'}}><h2>My Bookings — Next Phase</h2><p>Coming up in the next issue.</p></div>} />
+              <Route path="/bookings" element={<History />} />
+              <Route path="/history" element={<History />} />
               <Route path="/profile" element={<Profile />} />
             </Routes>
           </main>
