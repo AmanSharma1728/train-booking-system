@@ -1,6 +1,6 @@
 import type { User } from "../types/Auth";
 import type { Train, ClassCode, Passenger, Ticket } from "../types/Booking";
-import type { HoldResponse, RazorpayInitResponse } from "../types/ApiResponse";
+import type { HoldResponse, RazorpayInitResponse, VerifyResponse } from "../types/ApiResponse";
 
 const BASE_URL = "http://localhost:3000/api/v1";
 
@@ -108,11 +108,11 @@ export const api = {
     razorpay_order_id: string;
     razorpay_signature: string;
     holdId: string;
-  }): Promise<any> => {
+  }): Promise<VerifyResponse> => {
     return fetchAuth("/bookings/verify", {
       method: "POST",
       body: JSON.stringify(payload),
-    });
+    }) as Promise<VerifyResponse>;
   },
 
   getBooking: async (bookingId: string): Promise<Ticket> => {

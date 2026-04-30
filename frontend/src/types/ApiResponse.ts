@@ -12,3 +12,10 @@ export type RazorpayInitResponse = {
   holdId: string;
   key_id: string;
 };
+
+export type VerifyResponse = {
+  status: "CONFIRMED" | "RAC" | "WAITLISTED";
+  pnr: string;
+  seatInfo: string;
+  bookingId: string;
+};

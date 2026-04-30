@@ -1,5 +1,11 @@
 # Train Ticket Booking System Project Overview and Detailed Execution Plan
 
+> [!IMPORTANT]
+> **Project Status (as of 2026-04-30):**
+> - **Phases 1-6:** ✅ COMPLETED (Foundation, Auth, Search, Seat Hold, Payment Finalization).
+> - **Phase 7:** 🚀 IN PROGRESS (Cancellation & Queue Promotion Engine).
+> - **Phase 8:** ⏳ PLANNED (Admin & Operational Features).
+
 ## 1. Purpose
 
 This document gives a complete overview of the project from execution, ownership, sequencing, dependency, and documentation perspective. It is meant to be shown to management and used by both frontend and backend engineers to stay aligned.

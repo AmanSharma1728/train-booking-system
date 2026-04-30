@@ -150,12 +150,18 @@ Searches for trains between two stations on a specific date.
 - **Error Scenarios:**
   - `404 Not Found`: `{ "error": "Booking not found" }`
 
-### 3.3 `GET /bookings/history` (Protected)
+### 3.5 `GET /bookings/history` (Protected)
 - **Middleware**: `AuthMiddleware`
-- **Response (200 OK):** Array of Ticket objects (same shape as 3.2a response, with all statuses).
+- **Behaviour:** Retrieves all bookings (Confirmed, Cancelled, and Pending) for the user, sorted by journey date descending.
+- **Response (200 OK):** Array of Ticket objects (same shape as 3.4 response).
 
-### 3.4 `POST /bookings/:id/cancel` (Protected)
+### 3.6 `POST /bookings/:id/cancel` (Protected)
 - **Middleware**: `AuthMiddleware`
+- **Behaviour:** 
+  1. Verifies ownership.
+  2. Transitions status to `CANCELLED`.
+  3. Triggers **Queue Promotion** (RAC ➡️ Confirmed, WL ➡️ RAC).
+  4. Increments inventory if no queue exists.
 - **Response (200 OK):** `{ "success": true, "message": "Booking cancelled successfully" }`
 - **Error Scenarios:**
   - `400 Bad Request`: `{ "error": "Booking cannot be cancelled at this time" }`
